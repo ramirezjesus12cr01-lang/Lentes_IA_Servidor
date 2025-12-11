@@ -2,7 +2,7 @@ import os
 import io
 import base64
 import tempfile
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from PIL import Image
 from gtts import gTTS
 from google import genai
@@ -124,3 +124,4 @@ if __name__ == '__main__':
     # El host '0.0.0.0' es necesario para que sea accesible externamente.
 
     app.run(host='0.0.0.0', port=port)
+
