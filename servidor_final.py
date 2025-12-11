@@ -90,22 +90,26 @@ def analizar_imagen():
 def obtener_audio():
     try:
         if not os.path.exists(AUDIO_FILE_PATH):
-            return jsonify({"status": "error", "message": "Archivo de audio no encontrado o expiró."}), 404
+            return jsonify({"status": "error", "message": "Archivo de audio no encontrado."}), 404
 
-        # 1. Leer el archivo MP3
-        with open(AUDIO_FILE_PATH, 'rb') as f:
-            audio_bytes = f.read()
+        # 🛑 Usamos send_file con cabeceras explícitas (mimetype)
+        response = send_file(
+            AUDIO_FILE_PATH,
+            mimetype='audio/mpeg',  # 'audio/mpeg' es el estándar para MP3
+            as_attachment=False
+        )
 
-        # 2. Convertir a Base64 para enviarlo al ESP32
-        audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
+        # 🛑 Limpiar el archivo DESPUÉS de enviarlo
+        # Importante: Esto lo limpia después de que Render termina la transferencia.
+        @response.call_on_close
+        def cleanup():
+            try:
+                os.remove(AUDIO_FILE_PATH)
+                print(f"Archivo temporal eliminado: {AUDIO_FILE_PATH}")
+            except Exception as e:
+                print(f"Error al intentar eliminar el archivo: {e}")
         
-        # 3. Limpiar el archivo temporal
-        os.remove(AUDIO_FILE_PATH)
-
-        return jsonify({
-            "status": "success", 
-            "audio_base64": audio_base64
-        }), 200
+        return response
 
     except Exception as e:
         print(f"Error en obtener_audio: {e}")
@@ -118,4 +122,5 @@ if __name__ == '__main__':
     # Render usa la variable de entorno PORT para decirnos qué puerto usar.
     port = int(os.environ.get('PORT', 5000))
     # El host '0.0.0.0' es necesario para que sea accesible externamente.
+
     app.run(host='0.0.0.0', port=port)
