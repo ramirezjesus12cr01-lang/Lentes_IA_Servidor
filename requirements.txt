@@ -3,3 +3,4 @@ requests
 gTTS
 gunicorn
 Pillow
+google-geani
