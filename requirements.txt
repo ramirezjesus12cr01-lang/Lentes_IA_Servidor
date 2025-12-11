@@ -1,3 +1,4 @@
 flask
 requests
 gTTS
+gunicorn  <-- ¡Asegúrate de que esta línea esté ahí!
